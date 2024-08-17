@@ -1,33 +1,34 @@
 package com.example.offer_management_be.models;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
 @Builder
-@Table(name = "users")
+@AllArgsConstructor
+@Document(collection = "users")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
-    @Column(nullable = false, unique = true)
     private String userName;
 
-    @Column(nullable = false)
     private String  password;
 
+    public User (){
+        this.id = UUID.randomUUID();
+    }
     public  User (String name, String password){
+        this.id = UUID.randomUUID();
         this.userName = name;
         this.password =password;
     }

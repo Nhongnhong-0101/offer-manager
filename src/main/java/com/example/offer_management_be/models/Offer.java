@@ -1,28 +1,30 @@
 package com.example.offer_management_be.models;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@Entity
-@Table(name = "offers")
+@AllArgsConstructor
+@Document(collection = "offers")
 public class Offer {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
     private String title;
     private String description;
     private double discountPercentage;
     private double originalPrice;
     private double discountedPrice;
 
+    public Offer(){
+        this.id = UUID.randomUUID();
+    }
+
     public Offer(String title, String description, double discountPercentage, double originalPrice, double discountedPrice) {
+        this.id = UUID.randomUUID();
         this.title = title;
         this.description = description;
         this.discountPercentage = discountPercentage;

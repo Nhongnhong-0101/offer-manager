@@ -35,12 +35,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signUp(registerUserDto);
+    public ResponseEntity register(@RequestBody RegisterUserDto registerUserDto) {
+       try {
+           User registeredUser = authenticationService.signUp(registerUserDto);
+           return ResponseEntity.ok(registeredUser);
 
-
-        return ResponseEntity.ok(registeredUser);
-
+       } catch (Exception ex) {
+           ExceptionResponse exceptionResponse = new ExceptionResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+           return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
+       }
     }
 
     @PostMapping("/login")

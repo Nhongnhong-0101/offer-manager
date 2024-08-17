@@ -8,6 +8,8 @@ import com.example.offer_management_be.models.Offer;
 
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class OfferService {
@@ -18,27 +20,49 @@ public class OfferService {
         return offerRepository.findAll();
     }
 
-    public Offer getById(Long id){
+    public Offer getById(UUID id){
         return offerRepository.findById(id).orElseThrow(() -> new OfferNotFoundException(id));
     }
 
-    public Offer saveOffer(Offer offer){
+    public Offer createOffer(Offer offer){
         if(checkInfor(offer)){
-            modifyInforOfOffer(offer);
-            return offerRepository.save(offer);
+            if(offerRepository.findByTitle(offer.getTitle()).isPresent()){
+                throw new IllegalArgumentException("Offer with this title already exists");
+            }
         }
-        return null;
+        calculateInforOfOffer(offer);
+        return offerRepository.save(offer);
+    }
+    public Offer updateOffer(UUID id, Offer offer){
+        Optional<Offer> existedOffer = offerRepository.findById(id);
+        if(existedOffer.isEmpty()){
+            throw new OfferNotFoundException(id);
+        }
+        else {
+            Offer offerToUpdate = existedOffer.get();
+
+            offerToUpdate.setTitle(offer.getTitle());
+            offerToUpdate.setDescription(offer.getDescription());
+            offerToUpdate.setDiscountPercentage(offer.getDiscountPercentage());
+            offerToUpdate.setOriginalPrice(offer.getOriginalPrice());
+            offerToUpdate.setDiscountedPrice(offer.getDiscountedPrice());
+
+            offerToUpdate = calculateInforOfOffer(offerToUpdate);
+
+            return offerRepository.save(offerToUpdate);
+
+        }
     }
 
 
-    public Offer modifyInforOfOffer(Offer offer){
+    public Offer calculateInforOfOffer(Offer offer){
         double discountedPrice = offer.getOriginalPrice()*( 1 - offer.getDiscountPercentage()*0.01);
         offer.setDiscountedPrice(discountedPrice);
 
         return offer;
     }
 
-    public void deleteOffer (Long id){
+    public void deleteOffer (UUID id){
         offerRepository.deleteById(id);
     }
 
