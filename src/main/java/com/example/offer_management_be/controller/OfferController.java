@@ -2,6 +2,8 @@ package com.example.offer_management_be.controller;
 
 import com.example.offer_management_be.models.Offer;
 import com.example.offer_management_be.service.OfferService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.List;
 @RestController
 public class OfferController {
     private OfferService offerService;
+
+    Logger logger = LoggerFactory.getLogger(OfferController.class);
 
     public OfferController(OfferService offerService){
         this.offerService = offerService;
@@ -27,6 +31,7 @@ public class OfferController {
     @GetMapping("/offers/{id}")
     public Offer getById(@PathVariable Long id){
         return offerService.getById(id);
+
     }
 
     @PutMapping("/offers/{id}")
@@ -37,6 +42,9 @@ public class OfferController {
         unchangedOffer.setOriginalPrice(offer.getOriginalPrice());
         unchangedOffer.setDiscountPercentage(offer.getDiscountPercentage());
         unchangedOffer.setDiscountedPrice(offer.getDiscountedPrice());
+
+
+        logger.info(unchangedOffer.toString());
 
         return offerService.saveOffer(offer);
 

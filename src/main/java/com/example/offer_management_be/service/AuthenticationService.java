@@ -2,6 +2,7 @@ package com.example.offer_management_be.service;
 
 import com.example.offer_management_be.dto.LoginUserDto;
 import com.example.offer_management_be.dto.RegisterUserDto;
+import com.example.offer_management_be.exception.UserNotFoundException;
 import com.example.offer_management_be.models.User;
 import com.example.offer_management_be.repository.UserRepository;
 import org.slf4j.Logger;
@@ -12,12 +13,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthenticationService {
     private final UserRepository  userRepository;
     private final PasswordEncoder passwordEncoder;
 
+
+
     private final AuthenticationManager authenticationManager;
+
+    private  Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     @Autowired
     public AuthenticationService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
@@ -28,13 +35,22 @@ public class AuthenticationService {
 
     public User signUp(RegisterUserDto registerUserDto){
         User user = new User();
-                user.setUserName(registerUserDto.getUserName());
-                user.setPassword(registerUserDto.getPassword());
+        user.setUserName(registerUserDto.getUserName());
+        user.setPassword(passwordEncoder.encode(registerUserDto.getPassword()));
 
-        return userRepository.save(user);
+        Optional<User> exitsUser = userRepository.findByUserName(registerUserDto.getUserName());
+            if(exitsUser.isPresent()){
+                throw new RuntimeException("User existed");
+            }
+            else {
+                return userRepository.save(user);
+            }
     }
 
     public User authenticate(LoginUserDto loginUserDto) {
+        logger.info(loginUserDto.getUserName());
+        logger.info(loginUserDto.getPassword());
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginUserDto.getUserName(),
@@ -43,6 +59,6 @@ public class AuthenticationService {
         );
 
         return userRepository.findByUserName(loginUserDto.getUserName())
-                .orElseThrow();
+                .orElseThrow(() -> new UserNotFoundException(loginUserDto.getUserName()));
     }
 }
